@@ -67,19 +67,15 @@ def extract_characters_from_map(image, bounding_boxes, masks):
     image_with_cropped_areas = image.copy()
     white_area = Image.new("RGB", image.size, (255, 255, 255))
 
-    for bounding_box, mask in zip(bounding_boxes, masks):
-        image_mask = Image.fromarray(mask * 255, "L")
-        # bounding boxes have been already resized to the actual image size
-        image_mask_resized = image_mask.resize(image.size)
-        
-        image_crop_masked = crop_and_mask(image, bounding_box, image_mask_resized)
+    for bounding_box, mask in zip(bounding_boxes, masks):        
+        image_crop_masked = crop_and_mask(image, bounding_box, mask)
         image_crop_masked_padded, padding = pad_image(image_crop_masked)
         
         detected_characters.append(image_crop_masked_padded)
         top_left_corners.append([bounding_box[0], bounding_box[1]])
         paddings.append(padding)
         
-        image_with_cropped_areas.paste(white_area, image_mask_resized)
+        image_with_cropped_areas.paste(white_area, mask)
 
     return detected_characters, top_left_corners, paddings, image_with_cropped_areas
 

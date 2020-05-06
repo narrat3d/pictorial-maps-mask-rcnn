@@ -16,10 +16,9 @@ import numpy as np
 from character_segmentation import config
 from PIL import Image
 from character_segmentation.inference import initialise_sessions, infer
-from character_segmentation.highlight_characters import get_detection_mask_images
 
 
-input_folder = r"E:\CNN\masks\data\character_maps\separated\eval"
+input_folder = r"E:\CNN\masks\data\character_maps\separated"
 inference_model_path = config.get_inference_model_path("1st_run_separated_stride8_0.25_0.5_1.0_2.0", 1000)
 output_folder = r"E:\CNN\masks\data\separated_output"
 
@@ -141,14 +140,12 @@ def extract_characters_from_maps(input_folder, inference_model_path, output_fold
                   detection_session, detection_tensor, detection_placeholder, 
                   image_file_path) 
     
-        detection_mask_images = get_detection_mask_images(image.size, detection_masks)
-    
         image_name_without_ext = os.path.splitext(image_name)[0]
         mask_file_path = os.path.join(mask_input_folder, image_name_without_ext + ".png")
         keypoint_file_path = os.path.join(keypoint_input_folder, image_name_without_ext + ".json")
         
         (body_part_instances, keypoint_instances, _, _) = get_body_part_instances(mask_file_path, keypoint_file_path)        
-        match_instances(image, body_part_instances, keypoint_instances, detection_mask_images, detection_bounding_boxes,
+        match_instances(image, body_part_instances, keypoint_instances, detection_masks, detection_bounding_boxes,
                         instance_image_output_folder, instance_image_masked_output_folder, instance_mask_output_folder, 
                         instance_keypoints_output_folder)
         

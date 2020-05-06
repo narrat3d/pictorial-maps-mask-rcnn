@@ -5,7 +5,6 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 from object_detection.utils import ops as utils_ops
-from character_segmentation import config
 
 
 def initialise_sessions(inference_model_path):
@@ -80,12 +79,12 @@ def infer(image_session, image_tensor, image_placeholder, detection_session,
 
     detection_bounding_boxes = []
     detection_masks = []
+    detection_scores = []
+    detection_classes = []
 
-    for i in range(0, len(output_dict['detection_scores'])):
+    for i in range(output_dict['num_detections']):
         score = output_dict['detection_scores'][i]
-        
-        if (score == 0):
-            break
+        class_ = output_dict['detection_classes'][i]
         
         box = output_dict['detection_boxes'][i]
         
@@ -95,9 +94,12 @@ def infer(image_session, image_tensor, image_placeholder, detection_session,
         box_max_x = int(image_width * box[3]) + 1
         
         mask = output_dict['detection_masks'][i]
+        image_mask = Image.fromarray(mask * 255, "L")
+        image_mask_resized = image_mask.resize(image.size)
             
-        if score > config.INFERENCE_THRESHOLD:
-            detection_bounding_boxes.append([box_min_x, box_min_y, box_max_x, box_max_y])
-            detection_masks.append(mask)
+        detection_bounding_boxes.append([box_min_x, box_min_y, box_max_x, box_max_y])
+        detection_masks.append(image_mask_resized)
+        detection_scores.append(score.item())
+        detection_classes.append(class_.item())
     
-    return (detection_bounding_boxes, detection_masks, image)
+    return (detection_bounding_boxes, detection_masks, detection_scores, detection_classes, image)
