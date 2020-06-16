@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+import json
+from itertools import groupby
+from pycocotools import mask as COCOmask
+from copy import deepcopy
 """Class for evaluating object detections with COCO metrics."""
 import numpy as np
 import tensorflow as tf
@@ -156,11 +160,18 @@ class CocoDetectionEvaluator(object_detection_evaluation.DetectionEvaluator):
       json_output_path: String containing the output file's path. It can be also
         None. In that case nothing will be written to the output file.
     """
+    detection_boxes_list_copy = deepcopy(self._detection_boxes_list)
+    
+    detection_boxes_list_copy = list(filter(lambda d: d["score"] > 0, detection_boxes_list_copy))
+    
+    for detection in detection_boxes_list_copy:
+      detection["image_id"] = detection["image_id"].decode('utf-8') 
+    
     if json_output_path and json_output_path is not None:
       with tf.gfile.GFile(json_output_path, 'w') as fid:
         tf.logging.info('Dumping detections to output json file.')
         json_utils.Dump(
-            obj=self._detection_boxes_list, fid=fid, float_digits=4, indent=2)
+            obj=detection_boxes_list_copy, fid=fid, float_digits=4, indent=2)
 
   def evaluate(self):
     """Evaluates the detection boxes and returns a dictionary of coco metrics.
@@ -545,11 +556,44 @@ class CocoMaskEvaluator(object_detection_evaluation.DetectionEvaluator):
       json_output_path: String containing the output file's path. It can be also
         None. In that case nothing will be written to the output file.
     """
+    detection_mask_list_copy = deepcopy(self._detection_masks_list)
+    
+    detection_mask_list_copy = list(filter(lambda d: d["score"] > 0, detection_mask_list_copy))
+    
+    for detection in detection_mask_list_copy:
+      detection["image_id"] = detection["image_id"].decode('utf-8') 
+      detection["segmentation"]["counts"] = detection["segmentation"]["counts"].decode('utf-8')
+    
     if json_output_path and json_output_path is not None:
       tf.logging.info('Dumping detections to output json file.')
       with tf.gfile.GFile(json_output_path, 'w') as fid:
         json_utils.Dump(
-            obj=self._detection_masks_list, fid=fid, float_digits=4, indent=2)
+            obj=detection_mask_list_copy, fid=fid, float_digits=4, indent=2)
+  
+
+  def binary_mask_to_rle(self, binary_mask):
+    rle = {'counts': [], 'size': list(binary_mask.shape)}
+    counts = rle.get('counts')
+    for i, (value, elements) in enumerate(groupby(binary_mask.ravel(order='F'))):
+        if i == 0 and value == 1:
+                counts.append(0)
+        counts.append(len(list(elements)))
+
+    return rle
+
+  def dump_groundtruth_to_json_file(self, groundtruth_dict, json_output_path):
+    groundtruth_dict_copy = deepcopy(groundtruth_dict)
+    
+    for annotation in groundtruth_dict_copy["annotations"]:
+      annotation["image_id"] = annotation["image_id"].decode('utf-8') 
+      annotation["segmentation"] = COCOmask.decode(annotation["segmentation"])
+      annotation["segmentation"] = self.binary_mask_to_rle(annotation["segmentation"])
+    
+    for image in groundtruth_dict_copy["images"]:
+      image["id"] = image["id"].decode('utf-8')
+    
+    json.dump(groundtruth_dict_copy, open(json_output_path, "w"))
+
 
   def evaluate(self):
     """Evaluates the detection masks and returns a dictionary of coco metrics.
@@ -592,6 +636,10 @@ class CocoMaskEvaluator(object_detection_evaluation.DetectionEvaluator):
                    items()],
         'categories': self._categories
     }
+    # json_groundtruth_path = r""
+    # self.dump_groundtruth_to_json_file(groundtruth_dict, json_groundtruth_path)
+    
+
     coco_wrapped_groundtruth = coco_tools.COCOWrapper(
         groundtruth_dict, detection_type='segmentation')
     coco_wrapped_detection_masks = coco_wrapped_groundtruth.LoadAnnotations(

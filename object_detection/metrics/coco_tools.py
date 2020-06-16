@@ -405,6 +405,8 @@ def ExportSingleImageGroundtruthToCoco(image_id,
       }
       if groundtruth_masks is not None:
         export_dict['segmentation'] = _RleCompress(groundtruth_masks[i])
+        export_dict['area'] = mask.area(export_dict['segmentation']).tolist()
+        
       groundtruth_list.append(export_dict)
   return groundtruth_list
 
