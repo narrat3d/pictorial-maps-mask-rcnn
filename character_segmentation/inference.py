@@ -1,13 +1,14 @@
 '''
 helper class for inference
+
+code based on object_detection_tutorial.ipynb
 '''
 import tensorflow as tf
 import numpy as np
 from PIL import Image
 from object_detection.utils import ops as utils_ops
 
-
-def initialise_sessions(inference_model_path):
+def initialise_sessions(inference_model_path, image):
     detection_graph = tf.Graph()
     with detection_graph.as_default():
         od_graph_def = tf.GraphDef()
@@ -39,7 +40,6 @@ def initialise_sessions(inference_model_path):
             tensor_dict[key] = detection_graph.get_tensor_by_name(
                     tensor_name)
     if 'detection_masks' in tensor_dict:
-        # The following processing is only for single image
         detection_boxes = tf.squeeze(tensor_dict['detection_boxes'], [0])
         detection_masks = tf.squeeze(tensor_dict['detection_masks'], [0])
         # Reframe is required to translate mask from box coordinates to image coordinates and fit the image size.
@@ -47,10 +47,9 @@ def initialise_sessions(inference_model_path):
         detection_boxes = tf.slice(detection_boxes, [0, 0], [real_num_detection, -1])
         detection_masks = tf.slice(detection_masks, [0, 0, 0], [real_num_detection, -1, -1])
         detection_masks_reframed = utils_ops.reframe_box_masks_to_image_masks(
-                detection_masks, detection_boxes, 1000, 1000)
+                detection_masks, detection_boxes, image.height, image.width)
         detection_masks_reframed = tf.cast(
                 tf.greater(detection_masks_reframed, 0.5), tf.uint8)
-        # Follow the convention by adding back the batch dimension
         tensor_dict['detection_masks'] = tf.expand_dims(
                 detection_masks_reframed, 0)
     detection_image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
@@ -95,10 +94,11 @@ def infer(image_session, image_tensor, image_placeholder, detection_session,
         
         mask = output_dict['detection_masks'][i]
         image_mask = Image.fromarray(mask * 255, "L")
-        image_mask_resized = image_mask.resize(image.size)
+        # image_mask_resized = image_mask.resize(image.size)
+        # image_mask_resized.save(r"C:\Users\raimund\Downloads\test.png")
             
         detection_bounding_boxes.append([box_min_x, box_min_y, box_max_x, box_max_y])
-        detection_masks.append(image_mask_resized)
+        detection_masks.append(image_mask)
         detection_scores.append(score.item())
         detection_classes.append(class_.item())
     
