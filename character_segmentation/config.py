@@ -7,51 +7,57 @@ sys.path.append(slim_folder)
 # where checkpoint models are saved
 LOG_FOLDER = r"E:\CNN\logs\mask_rcnn\character_tensorflow"
 
-# where training data is stored
-DATA_FOLDER = r"E:\CNN\masks\tensorflow\characters"
-
+# where training images, masks, and keypoints are stored
 SOURCE_DATA_FOLDER = r"E:\CNN\masks\data\character_maps"
 
-# model which will be retrained
-COCO_WEIGHTS_PATH = r"E:\CNN\models\mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28\model.ckpt"
+# where training records are stored
+DATA_FOLDER = r"E:\CNN\masks\tensorflow\characters"
+CROPPED_IMAGES_FOLDER = os.path.join(DATA_FOLDER, "cropped_images")
 
-CONFIG_FILE_PATH = os.path.join(DATA_FOLDER, "mask_rcnn_inception_resnet_v2_atrous_coco.config")
-CONFIG_FILE_TEMPLATE_PATH = os.path.join(DATA_FOLDER, "mask_rcnn_inception_resnet_v2_atrous_coco_template.config")
+# model which will be retrained
+MODEL_NAME = "mask_rcnn_resnet101_atrous_coco"
+COCO_WEIGHTS_PATH = r"E:\CNN\models\%s_2018_01_28\model.ckpt" % MODEL_NAME
+ORIGINAL_INFERENCE_MODEL_PATH = r"E:\CNN\models\%s_2018_01_28\frozen_inference_graph.pb" % MODEL_NAME
+
+CONFIG_FILE_PATH = os.path.join(DATA_FOLDER, "%s.config" % MODEL_NAME)
+CONFIG_FILE_TEMPLATE_PATH = os.path.join(DATA_FOLDER, "%s_template.config" % MODEL_NAME)
 
 LABEL_MAP_PATH = os.path.join(DATA_FOLDER, "label_map.pbtxt")
 TRAIN_RECORD_PATH = os.path.join(DATA_FOLDER, "train_%s.record")
 TEST_RECORD_PATH = os.path.join(DATA_FOLDER, "test.record")
 
+DATASET_NAMES = ["real", "synthetic", "separated", "mixed", "separated_mixed", "test"]
+
 TEST_DATA_PATH = os.path.join(SOURCE_DATA_FOLDER, "test")
 COCO_GROUND_TRUTH_PATH = os.path.join(SOURCE_DATA_FOLDER, "test", "coco_ground_truth.json")
 PERSON_CATEGORY_ID = 1
+PERSON_CATEGORY_NAME = "character"
 
 DATA_SET_NAMES = [
+    # "real",
+    # "synthetic",
     "separated",
     # "mixed",
-    # "separated_mixed"
+    # "separated_mixed",
 ]
 
 SCALE_ARRAYS = [
-    [0.25, 0.5, 1.0, 2.0],
-    # [0.125, 0.25, 0.5, 1.0],
-    # [0.0625, 0.125, 0.25, 0.5]
+    # [0.25, 0.5, 1.0, 2.0],
+    # [0.125, 0.25, 0.5, 1.0]
+    [0.06125, 0.125, 0.25, 0.5]
 ]
 
 STRIDES = [8]
-RUN_NRS = ["1st"] 
+RUN_NRS = ["1st"] # "2nd", "3rd"
 
-EPOCHS = 1
-STEP_SIZE = 2 * 576 # 576
-MAX_STEPS = EPOCHS * STEP_SIZE
+EVAL_STEPS = [2304]
 
-INFERENCE_THRESHOLD = 0.6
+INFERENCE_THRESHOLD = 0.5
 INFERENCE_FOLDER_NAME = "inference-%s"
 
 get_train_record_path = lambda data_set_name: TRAIN_RECORD_PATH % data_set_name
 get_test_record_path = lambda: TEST_RECORD_PATH
 
-get_original_inference_model_path = lambda model_name: r"E:\CNN\models\%s\frozen_inference_graph.pb" % model_name
 get_inference_model_path = lambda checkpoint_folder_name, step: os.path.join(LOG_FOLDER, checkpoint_folder_name, 
                                                               INFERENCE_FOLDER_NAME % step, "frozen_inference_graph.pb")
 
