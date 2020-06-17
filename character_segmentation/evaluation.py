@@ -96,7 +96,8 @@ def print_coco_results(coco_results_path, image_ids):
 def filter_coco_results(coco_results_path, coco_filtered_results_path, category_ids_to_keep):
     coco_results = json.load(open(coco_results_path))
     
-    filtered_coco_results = list(filter(lambda coco_result: coco_result["category_id"] in category_ids_to_keep and coco_result["score"] > 0.3,
+    # assume coco_result["score"] > 0.3
+    filtered_coco_results = list(filter(lambda coco_result: coco_result["category_id"] in category_ids_to_keep,
                                  coco_results))
 
     json.dump(filtered_coco_results, open(coco_filtered_results_path, "w"))
@@ -122,6 +123,8 @@ def evaluate(image_input_folder, inference_model_path, image_output_folder, coco
     
     coco_results = []
 
+    (image_placeholder, detection_session, detection_dict) = initialise_sessions(inference_model_path)
+
     for image_name in image_names:
         image_id = image_ids.get(image_name)
         
@@ -133,13 +136,8 @@ def evaluate(image_input_folder, inference_model_path, image_output_folder, coco
         image_file_path = os.path.join(image_input_folder, image_name)
         image = Image.open(image_file_path)
 
-        (image_session, image_tensor, image_placeholder,
-            detection_session, detection_tensor, detection_placeholder) = initialise_sessions(inference_model_path, image)
-    
         (detection_bounding_boxes, detection_masks, detection_scores, detection_classes, image) = \
-            infer(image_session, image_tensor, image_placeholder, 
-                  detection_session, detection_tensor, detection_placeholder, 
-                  image_file_path) 
+            infer(image_file_path, image_placeholder, detection_session, detection_dict)
         
         visualize_detections(image, detection_bounding_boxes, detection_masks, detection_scores, detection_classes, (0,255,255,0))
         calculate_coco_results(coco_results, image_id, detection_masks, detection_scores, detection_classes)
@@ -151,19 +149,19 @@ def evaluate(image_input_folder, inference_model_path, image_output_folder, coco
 
 
 def evaluate_original_model():
+    original_model_path = os.path.join(config.LOG_FOLDER, config.MODEL_NAME)
+    
     # coco results json was created with train_and_eval.py with export_path specified
-    coco_results_path = r"E:\CNN\logs\mask_rcnn\character_tensorflow\original_model\coco_results.json"
-    coco_filtered_results_path = r"E:\CNN\logs\mask_rcnn\character_tensorflow\original_model\filtered_coco_results.json"
+    coco_results_path = os.path.join(original_model_path, "coco_results.json")
+    coco_filtered_results_path = os.path.join(original_model_path, "filtered_coco_results.json")
     filter_coco_results(coco_results_path, coco_filtered_results_path, [config.PERSON_CATEGORY_ID])
     convert_image_file_names_to_ids(coco_filtered_results_path)
     print_coco_results(coco_filtered_results_path, image_ids)
 
 
-def evaluate_retrained_model():
+def evaluate_retrained_model(model_name, step):
     image_input_folder = os.path.join(config.TEST_DATA_PATH, "images")
     
-    model_name = "1st_run_separated_stride8_0.25_0.5_1.0_2.0"
-    step = 2304
     inference_model_path = config.get_inference_model_path(model_name, step)
     
     image_output_folder = os.path.join(config.LOG_FOLDER, model_name, "results-%s" % step)
@@ -176,5 +174,5 @@ def evaluate_retrained_model():
 if __name__ == '__main__':
     image_ids = range(1, 53)
 
-    evaluate_original_model()
-    evaluate_retrained_model()
+    # evaluate_original_model()
+    evaluate_retrained_model("1st_run_separated_stride8_0.25_0.5_1.0_2.0", 2304)

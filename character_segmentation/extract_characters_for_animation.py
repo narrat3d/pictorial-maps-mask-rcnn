@@ -24,11 +24,6 @@ import shutil
 import json
 
 
-image_input_folder = r"E:\CNN\masks\data\separated_input"
-output_folder = r"E:\CNN\masks\data\separated_output"
-inference_model_path = config.get_inference_model_path("1st_run_separated_stride8_0.25_0.5_1.0_2.0", 1000)
-
-
 def pad_image(image):
     if (image.width > image.height):
         length = image.width
@@ -80,20 +75,17 @@ def extract_characters_from_map(image, bounding_boxes, masks):
     return detected_characters, top_left_corners, paddings, image_with_cropped_areas
 
 
-if __name__ == '__main__':
+def main(image_input_folder, output_folder, inference_model_path):
     image_names = os.listdir(image_input_folder)
     
-    (image_session, image_tensor, image_placeholder,
-      detection_session, detection_tensor, detection_placeholder) = initialise_sessions(inference_model_path)
+    (image_placeholder, detection_session, detection_dict) = initialise_sessions(inference_model_path)
       
     for image_name in image_names:
         print(image_name)
         image_file_path = os.path.join(image_input_folder, image_name)
         
-        (detection_bounding_boxes, detection_masks, image) = \
-            infer(image_session, image_tensor, image_placeholder, 
-                  detection_session, detection_tensor, detection_placeholder, 
-                  image_file_path) 
+        (detection_bounding_boxes, detection_masks, _, _, image) = \
+            infer(image_file_path, image_placeholder, detection_session, detection_dict)
             
         character_images, top_left_corners, paddings, image_with_cropped_areas = \
             extract_characters_from_map(image, detection_bounding_boxes, detection_masks)
@@ -129,3 +121,9 @@ if __name__ == '__main__':
         }
         map_config_file_path = os.path.join(output_map_folder, "config.json")
         json.dump(map_config, open(map_config_file_path, "w"))
+
+if __name__ == '__main__':
+    image_input_folder = os.path.join(config.TEST_DATA_PATH, "images")
+    output_folder = os.path.join(config.LOG_FOLDER, "characters_for_animation")
+    inference_model_path = config.get_inference_model_path("1st_run_separated_stride8_0.25_0.5_1.0_2.0", 2304)
+    main(image_input_folder, output_folder, inference_model_path)

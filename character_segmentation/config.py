@@ -14,7 +14,7 @@ SOURCE_DATA_FOLDER = r"E:\CNN\masks\data\character_maps"
 DATA_FOLDER = r"E:\CNN\masks\tensorflow\characters"
 CROPPED_IMAGES_FOLDER = os.path.join(DATA_FOLDER, "cropped_images")
 
-# model which will be retrained
+# original model which will be retrained
 MODEL_NAME = "mask_rcnn_resnet101_atrous_coco"
 COCO_WEIGHTS_PATH = r"E:\CNN\models\%s_2018_01_28\model.ckpt" % MODEL_NAME
 ORIGINAL_INFERENCE_MODEL_PATH = r"E:\CNN\models\%s_2018_01_28\frozen_inference_graph.pb" % MODEL_NAME

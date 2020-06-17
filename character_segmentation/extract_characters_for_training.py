@@ -1,6 +1,6 @@
 '''
 input: 
-training or validation data containing maps with characters
+training data containing maps with characters
 
 output: 
 detected characters on the map with the complete background or 
@@ -16,12 +16,6 @@ import numpy as np
 from character_segmentation import config
 from PIL import Image
 from character_segmentation.inference import initialise_sessions, infer
-
-
-input_folder = r"E:\CNN\masks\data\character_maps\separated"
-inference_model_path = config.get_inference_model_path("1st_run_separated_stride8_0.25_0.5_1.0_2.0", 1000)
-output_folder = r"E:\CNN\masks\data\separated_output"
-
 
 instance_counter = 0
 
@@ -113,10 +107,10 @@ def match_instances(image, gt_masks, keypoints, detected_mask_images, detected_b
         instance_counter += 1
 
 
-def extract_characters_from_maps(input_folder, inference_model_path, output_folder):
-    image_input_folder = os.path.join(input_folder, "images")
-    mask_input_folder = os.path.join(input_folder, "masks")
-    keypoint_input_folder = os.path.join(input_folder, "keypoints")
+def main(data_input_folder, output_folder, inference_model_path):
+    image_input_folder = os.path.join(data_input_folder, "images")
+    mask_input_folder = os.path.join(data_input_folder, "masks")
+    keypoint_input_folder = os.path.join(data_input_folder, "keypoints")
     
     instance_image_masked_output_folder = os.path.join(output_folder, "images_with_some_background")
     instance_image_output_folder = os.path.join(output_folder, "images_with_background")
@@ -128,17 +122,14 @@ def extract_characters_from_maps(input_folder, inference_model_path, output_fold
     
     image_names = os.listdir(image_input_folder)
 
-    (image_session, image_tensor, image_placeholder,
-      detection_session, detection_tensor, detection_placeholder) = initialise_sessions(inference_model_path)
+    (image_placeholder, detection_session, detection_dict) = initialise_sessions(inference_model_path)
 
     for image_name in image_names:
         print(image_name)
         image_file_path = os.path.join(image_input_folder, image_name)
            
-        (detection_bounding_boxes, detection_masks, image) = \
-            infer(image_session, image_tensor, image_placeholder, 
-                  detection_session, detection_tensor, detection_placeholder, 
-                  image_file_path) 
+        (detection_bounding_boxes, detection_masks, _, _, image) = \
+            infer(image_file_path, image_placeholder, detection_session, detection_dict)
     
         image_name_without_ext = os.path.splitext(image_name)[0]
         mask_file_path = os.path.join(mask_input_folder, image_name_without_ext + ".png")
@@ -151,4 +142,7 @@ def extract_characters_from_maps(input_folder, inference_model_path, output_fold
         
 
 if __name__ == '__main__':
-    extract_characters_from_maps(input_folder, inference_model_path, output_folder)
+    data_input_folder = os.path.join(config.SOURCE_DATA_FOLDER, "separated")
+    output_folder = os.path.join(config.LOG_FOLDER, "characters_for_training")
+    inference_model_path = config.get_inference_model_path("1st_run_separated_stride8_0.25_0.5_1.0_2.0", 2304)
+    main(data_input_folder, output_folder, inference_model_path)
