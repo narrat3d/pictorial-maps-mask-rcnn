@@ -87,10 +87,10 @@ def main():
             
         if (not highest_coco_values is None):
             for data_set_name in config.DATA_SET_NAMES:
-                if (folder_name.find("_run_%s_" % data_set_name) != -1):
+                parts = folder_name.split("_run_%s_stride8_" % data_set_name) 
+            
+                if (len(parts) > 1):
                     results_for_scales = aggregated_results.setdefault(data_set_name, {})
-                     
-                    parts = folder_name.split("_run_%s_stride8_" % data_set_name)
                     scales_string = parts[1]
                     
                     results_array = results_for_scales.setdefault(scales_string, [])
@@ -101,20 +101,25 @@ def main():
         
         for scales_string, results_array in results_for_scales.items():
             scales_comma = ", ".join(scales_string.split("_"))
+            
+            # remove highest and lowest result
+            results_array.sort(key=lambda array: array[0])
+            filtered_results_array = results_array[1:-1]
+            
             """
             # for printing individual results
             print ("%s\t" % scales_comma)
             
-            for result_array in results_array:
+            for result_array in filtered_results_array:
                 result_array_string = "\t".join(map(lambda result: str(round(result * 100, 2)) + "%", result_array))
                 print (result_array_string)
             """
             
-            average_results = np.mean(np.array(results_array), axis=0).tolist()
+            average_results = np.mean(np.array(filtered_results_array), axis=0).tolist()
             average_results = average_results[0:6]
             average_results_string = "\t".join(map(lambda result: str(round(result * 100, 2)) + "%", average_results))
             
             print ("%s\t%s" % (scales_comma, average_results_string))
-
+            
 if __name__ == '__main__':
     main()
