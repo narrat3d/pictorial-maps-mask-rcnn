@@ -20,7 +20,7 @@ def bbox(img):
     return bbox
 
 
-def create_tf_example(image_source_folder, image_file_name, mask_file_path, keypoints_file_path, cropped_images_data_folder):    
+def create_tf_example(image_source_folder, image_file_name, mask_file_path, keypoints_file_path, cropped_regions_data_folder):    
     image_file_path = os.path.join(image_source_folder, image_file_name)
     encoded_filename = image_file_path.encode()
     
@@ -88,11 +88,11 @@ def create_tf_example(image_source_folder, image_file_name, mask_file_path, keyp
         classes_text.append(class_name)
         classes.append(class_id)
         
-        cropped_image = image.crop((xmin, ymin, xmax, ymax))
+        cropped_region = image.crop((xmin, ymin, xmax, ymax))
         region_filename = image_file_name[:-4] + "_%s" % i + image_file_name[-4:]
         
-        cropped_image_file_path = os.path.join(cropped_images_data_folder, region_filename)
-        cropped_image.save(cropped_image_file_path)
+        cropped_region_file_path = os.path.join(cropped_regions_data_folder, region_filename)
+        cropped_region.save(cropped_region_file_path)
         
 
     if (len(classes) == None):
@@ -137,8 +137,8 @@ def main(_):
         mode["number_of_boxes"] = 0
         mode["number_of_examples"] = 0
         
-        cropped_images_data_folder = os.path.join(config.CROPPED_IMAGES_FOLDER, mode_name)
-        mkdir_if_not_exists(cropped_images_data_folder)
+        cropped_regions_data_folder = os.path.join(config.CROPPED_REGIONS_FOLDER, mode_name)
+        mkdir_if_not_exists(cropped_regions_data_folder)
         
         image_source_folder = os.path.join(mode["source_folder"], IMAGE_SOURCE_FOLDER_NAME)
         
@@ -147,7 +147,7 @@ def main(_):
             keypoints_file_path = os.path.join(mode["source_folder"], KEYPOINT_SOURCE_FOLDER_NAME, image_name.replace(".jpg", ".json"))
             
             (tf_example, number_of_boxes) = create_tf_example(image_source_folder, image_name, 
-                                                              mask_file_path, keypoints_file_path, cropped_images_data_folder)
+                                                              mask_file_path, keypoints_file_path, cropped_regions_data_folder)
             
             if (tf_example == None):
                 continue

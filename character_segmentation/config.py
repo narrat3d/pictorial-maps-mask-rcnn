@@ -12,7 +12,7 @@ SOURCE_DATA_FOLDER = r"E:\CNN\masks\data\character_maps"
 
 # where training records are stored
 DATA_FOLDER = r"E:\CNN\masks\tensorflow\characters"
-CROPPED_IMAGES_FOLDER = os.path.join(DATA_FOLDER, "cropped_regions")
+CROPPED_REGIONS_FOLDER = os.path.join(DATA_FOLDER, "cropped_regions")
 
 # original model which will be retrained
 MODEL_NAME = "mask_rcnn_resnet101_atrous_coco"
