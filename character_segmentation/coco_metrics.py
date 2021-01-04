@@ -110,7 +110,7 @@ def main():
             # for printing individual results
             print ("%s\t" % scales_comma)
             
-            for result_array in filtered_results_array:
+            for result_array in results_array:
                 result_array_string = "\t".join(map(lambda result: str(round(result * 100, 2)) + "%", result_array))
                 print (result_array_string)
             """

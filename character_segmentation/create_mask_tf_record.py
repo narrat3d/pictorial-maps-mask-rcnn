@@ -44,7 +44,7 @@ def create_tf_example(image_source_folder, image_file_name, mask_file_path, keyp
     
     image_format = b"jpeg" # b'jpeg' or b'png'
 
-    class_name = config.PERSON_CATEGORY_NAME
+    class_name = config.PERSON_CATEGORY_NAME.encode('utf-8')
     class_id = config.PERSON_CATEGORY_ID
 
     xmins = [] # List of normalized left x coordinates in bounding box (1 per box)
@@ -124,7 +124,7 @@ def mkdir_if_not_exists(file_path):
 def main(_):
     modes = {}
     
-    for dataset_name in config.DATASET_NAMES:
+    for dataset_name in config.RECORD_NAMES:
         modes[dataset_name] = {
             "source_folder": os.path.join(config.SOURCE_DATA_FOLDER, dataset_name),
             "record_name": "%s.record" % dataset_name

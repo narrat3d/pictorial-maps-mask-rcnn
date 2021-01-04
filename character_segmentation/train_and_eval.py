@@ -58,8 +58,8 @@ def train_and_eval():
 
 
 def eval_original_model():
-    config_file_path = r"E:\CNN\logs\mask_rcnn\character_tensorflow\3epochs_run_separated_stride8_0.25_0.5_1.0_2.0\inference-2304test\pipeline.config"
-    folder_name = "3epochs_run_separated_stride8_0.25_0.5_1.0_2.0"
+    config_file_path = config.ORIGINAL_CONFIG_FILE_PATH
+    folder_name = config.MODEL_NAME
     
     eval_process = Process(target=mask_rcnn_eval, args=(folder_name, config_file_path))
     eval_process.start()
@@ -67,5 +67,5 @@ def eval_original_model():
 
 
 if __name__ == '__main__':    
-    # train_and_eval()
-    eval_original_model()
+    train_and_eval()
+    # eval_original_model()
