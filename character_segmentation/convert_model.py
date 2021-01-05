@@ -15,7 +15,7 @@ from object_detection import export_inference_graph
 import shutil
 
 for current_step in config.EVAL_STEPS:    
-    for data_set_name in config.DATA_SET_NAMES:
+    for data_set_name in config.DATASET_NAMES:
         for run_nr in config.RUN_NRS:
             for stride in config.STRIDES:
                 for scales in config.SCALE_ARRAYS:
@@ -39,13 +39,11 @@ for current_step in config.EVAL_STEPS:
                     
                     file_names = os.listdir(output_folder)
                     
-                    """
                     for file_name in file_names:
-                        if (file_name != "frozen_inference_graph.pb"):
+                        if (file_name != config.INFERENCE_GRAPH_NAME):
                             file_path = os.path.join(output_folder, file_name)
                             
                             if (os.path.isfile(file_path)):
                                 os.remove(file_path)
                             else:
                                 shutil.rmtree(file_path)
-                    """

@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 *.jpg
 *.png
+config/mscoco_pipeline.config
+config/narrated_pipeline.config

@@ -18,6 +18,7 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from pycocotools import mask as COCOmask
 from character_segmentation.config import mkdir_if_not_exists
+import shutil
 
 
 def draw_bounding_box(image_draw, bounding_box, color):
@@ -46,12 +47,13 @@ def visualize_detections(image_pil, bounding_boxes, masks, scores, classes, colo
 def load_coco_data():
     coco_data = json.load(open(config.COCO_GROUND_TRUTH_PATH))
     coco_images = coco_data["images"]
-    image_ids = {}
+    image_ids_for_file_names = {}
     
     for coco_image in coco_images:
-        image_ids[coco_image["file_name"]] = coco_image["id"]
+        file_name = coco_image["file_name"]
+        image_ids_for_file_names[file_name] = coco_image["id"]
         
-    return image_ids
+    return image_ids_for_file_names
 
 
 def calculate_coco_results(coco_results, image_id, masks, scores, classes):
@@ -106,27 +108,28 @@ def filter_coco_results(coco_results_path, coco_filtered_results_path, category_
 def convert_image_file_names_to_ids(coco_results_path):
     coco_results = json.load(open(coco_results_path))
 
-    image_ids = load_coco_data()
+    image_ids_for_file_names = load_coco_data()
     
     for coco_result in coco_results:
         file_name = os.path.basename(coco_result["image_id"])
-        coco_result["image_id"] = image_ids[file_name]
+        coco_result["image_id"] = image_ids_for_file_names[file_name]
     
     json.dump(coco_results, open(coco_results_path, "w"))
+    return list(image_ids_for_file_names.values())
     
     
 def evaluate(image_input_folder, inference_model_path, image_output_folder, coco_results_path, allowed_image_ids):
     mkdir_if_not_exists(image_output_folder)
     
     image_names = os.listdir(image_input_folder)
-    image_ids = load_coco_data()
+    image_ids_for_file_names = load_coco_data()
     
     coco_results = []
 
     (image_placeholder, detection_session, detection_dict) = initialise_sessions(inference_model_path)
 
     for image_name in image_names:
-        image_id = image_ids.get(image_name)
+        image_id = image_ids_for_file_names.get(image_name)
         
         if (image_id is None or not image_id in allowed_image_ids):
             continue
@@ -148,17 +151,26 @@ def evaluate(image_input_folder, inference_model_path, image_output_folder, coco
     json.dump(coco_results, open(coco_results_path, "w"))
 
 
-def evaluate_original_model():
-    original_model_path = os.path.join(config.LOG_FOLDER, config.MODEL_NAME)
+def evaluate_existing_model(model_name, step):
+    model_path = os.path.join(config.MODELS_FOLDER, model_name)
     
-    # coco results json was created with train_and_eval.py with export_path specified
-    coco_results_path = os.path.join(original_model_path, "coco_results.json")
-    coco_filtered_results_path = os.path.join(original_model_path, "filtered_coco_results.json")
-    filter_coco_results(coco_results_path, coco_filtered_results_path, [config.PERSON_CATEGORY_ID])
-    convert_image_file_names_to_ids(coco_filtered_results_path)
-    print_coco_results(coco_filtered_results_path, image_ids)
+    log_folder_path = os.path.join(config.LOG_FOLDER, model_name)
+    config.mkdir_if_not_exists(log_folder_path)
+    
+    inference_folder_path = os.path.join(log_folder_path, config.INFERENCE_FOLDER_NAME % step)
+    config.mkdir_if_not_exists(inference_folder_path)
+    
+    shutil.copy(os.path.join(model_path, config.INFERENCE_GRAPH_NAME), inference_folder_path)
 
+    evaluate_retrained_model(model_name, step)
 
+def evaluate_original_model():
+    evaluate_existing_model(config.ORIGINAL_MODEL_NAME, 0)
+    
+def evaluate_best_model():
+    evaluate_existing_model(config.BEST_MODEL_NAME, 2304)
+
+# model needs to be converted in convert_model.py beforehand
 def evaluate_retrained_model(model_name, step):
     image_input_folder = os.path.join(config.TEST_DATA_PATH, "images")
     
@@ -167,12 +179,12 @@ def evaluate_retrained_model(model_name, step):
     image_output_folder = os.path.join(config.LOG_FOLDER, model_name, "results-%s" % step)
     coco_results_path = os.path.join(config.LOG_FOLDER, model_name, "results-%s" % step, "coco_results.json")
 
+    image_ids = range(1, 53)
     evaluate(image_input_folder, inference_model_path, image_output_folder, coco_results_path, image_ids)
     print_coco_results(coco_results_path, image_ids)
     
     
 if __name__ == '__main__':
-    image_ids = range(1, 53)
-
     # evaluate_original_model()
-    evaluate_retrained_model("1st_run_separated_stride8_0.25_0.5_1.0_2.0", 2304)
+    # evaluate_best_model()
+    evaluate_retrained_model("1st_run_separated_stride8_0.125_0.25_0.5_1.0", 2304)

@@ -86,11 +86,11 @@ def main():
                     export_inference_graph.main([])
             
         if (not highest_coco_values is None):
-            for data_set_name in config.DATA_SET_NAMES:
-                parts = folder_name.split("_run_%s_stride8_" % data_set_name) 
+            for dataset_name in config.DATASET_NAMES:
+                parts = folder_name.split("_run_%s_stride8_" % dataset_name) 
             
                 if (len(parts) > 1):
-                    results_for_scales = aggregated_results.setdefault(data_set_name, {})
+                    results_for_scales = aggregated_results.setdefault(dataset_name, {})
                     scales_string = parts[1]
                     
                     results_array = results_for_scales.setdefault(scales_string, [])

@@ -131,7 +131,7 @@ def main(_):
         }
         
     for mode_name, mode in modes.items():        
-        record_path = os.path.join(config.DATA_FOLDER, mode["record_name"])
+        record_path = os.path.join(config.RECORDS_FOLDER, mode["record_name"])
         mode["writer"] = tf.python_io.TFRecordWriter(record_path)
         
         mode["number_of_boxes"] = 0
