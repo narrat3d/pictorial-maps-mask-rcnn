@@ -39,6 +39,7 @@ for current_step in config.EVAL_STEPS:
                     
                     file_names = os.listdir(output_folder)
                     
+                    # comment if you like to keep intermediate files
                     for file_name in file_names:
                         if (file_name != config.INFERENCE_GRAPH_NAME):
                             file_path = os.path.join(output_folder, file_name)

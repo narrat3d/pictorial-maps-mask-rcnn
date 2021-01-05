@@ -17,9 +17,8 @@ SOURCE_DATA_FOLDER = r"C:\Users\sraimund\Pictorial-Maps-Mask-RCNN\data\character
 # where training and test records are stored
 RECORDS_FOLDER = r"C:\Users\sraimund\Pictorial-Maps-Mask-RCNN\records"
 
-# original model which will be retrained or evaluated
+# where existing models are stored
 MODELS_FOLDER = r"C:\Users\sraimund\Pictorial-Maps-Mask-RCNN\models"
-
 
 LABEL_MAP_NAME = "narrated_label_map.pbtxt"
 PIPELINE_NAME = "narrated_pipeline.config"
@@ -27,7 +26,7 @@ PIPELINE_NAME = "narrated_pipeline.config"
 CROPPED_REGIONS_FOLDER = os.path.join(RECORDS_FOLDER, "cropped_regions")
 
 BEST_MODEL_NAME = "separated_stride8_0.0625_0.125_0.25_0.5" 
-# 3rd_run_separated_stride8_0.0625_0.125_0.25_0.5
+# internally 3rd_run_separated_stride8_0.0625_0.125_0.25_0.5
 
 ORIGINAL_MODEL_NAME = "mask_rcnn_resnet101_atrous_coco"
 ORIGINAL_COCO_WEIGHTS_PATH = os.path.join(MODELS_FOLDER, ORIGINAL_MODEL_NAME, "model.ckpt")

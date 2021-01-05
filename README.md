@@ -16,20 +16,21 @@
 
 ## Training
 * Set LOG_FOLDER in config.py where intermediate snapshots shall be stored
-* Download the original Mask R-CNN model trained on COCO images from [here](https://ikgftp.ethz.ch/?u=qj9J&p=Pc8P&path=/human_figures_on_maps_models.zip) (or [TensorFlow](http://download.tensorflow.org/models/object_detection/mask_rcnn_resnet101_atrous_coco_2018_01_28.tar.gz)) and set ORIGINAL_MODEL_PATH to the downloaded model in config.py
+* Download the original Mask R-CNN model trained on COCO images from [here](https://ikgftp.ethz.ch/?u=qj9J&p=Pc8P&path=/human_figures_on_maps_models.zip) (or [TensorFlow](http://download.tensorflow.org/models/object_detection/mask_rcnn_resnet101_atrous_coco_2018_01_28.tar.gz)) and set MODELS_FOLDER to the path in config.py
 * Optionally adjust properties like dataset names (e.g. separated), number of runs (e.g. 1st), scales (e.g. [0.25, 0.5, 1.0, 2.0]), eval steps (e.g. [2304]) in config.py
 * Run train_and_eval.py to train and validate the network in alternating epochs
 * Run coco_metrics.py to see individual or average COCO scores from validation checkpoints
 
 ## Evaluation
 #### Retrained models
-* first convert your models from saved checkpoint into inference graphs with convert_model.py
-* use evaluation.py to draw bounding boxes around persons and transparent masks over persons on the map
+* First convert your models from saved checkpoint into inference graphs with convert_model.py
+* Use evaluation.py to draw bounding boxes around persons and transparent masks over persons on the map
 
 #### Existing models
+* Download the original and best retrained model from [here](https://ikgftp.ethz.ch/?u=qj9J&p=Pc8P&path=/human_figures_on_maps_models.zip) and set MODELS_FOLDER to the path in config.py
 * Run evaluate_best_model() in evaluation.py to evaluate the best frozen model trained with the data above
 * Run evaluate_original_model() in evaluation.py to evaluate the original frozen model trained on COCO images
-* Run eval_original_model() in train_and_eval.py to evaluate the original model snapshot trained on COCO images
+* Run eval_original_model() in train_and_eval.py to evaluate the original checkpoint model trained on COCO images
 * Note that there is a small difference between the two COCO scores due to a [TensorFlow bug](https://github.com/tensorflow/models/issues/8624)
 
 ## Sources
