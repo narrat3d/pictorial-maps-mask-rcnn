@@ -25,8 +25,8 @@ PIPELINE_NAME = "narrated_pipeline.config"
 
 CROPPED_REGIONS_FOLDER = os.path.join(RECORDS_FOLDER, "cropped_regions")
 
-BEST_MODEL_NAME = "separated_stride8_0.0625_0.125_0.25_0.5" 
-# internally 3rd_run_separated_stride8_0.0625_0.125_0.25_0.5
+BEST_MODEL_NAME = "separated_stride8_0.25_0.5_1.0_2.0" 
+# internally 3rd_run_separated_new_stride8_0.25_0.5_1.0_2.0
 
 ORIGINAL_MODEL_NAME = "mask_rcnn_resnet101_atrous_coco"
 ORIGINAL_COCO_WEIGHTS_PATH = os.path.join(MODELS_FOLDER, ORIGINAL_MODEL_NAME, "model.ckpt")
@@ -41,12 +41,12 @@ PERSON_CATEGORY_NAME = "character"
 
 # optionally comment items in the list 
 RECORD_NAMES = [
+    # "synthetic",
     # "real",
-    # "test", 
-    # "synthetic", 
-    "separated", 
-    # "mixed", 
-    # "separated_mixed"
+    "separated",
+    # "mixed",
+    # "separated_mixed",
+    # "test"
 ]
 
 # optionally comment items in the list 
@@ -60,17 +60,19 @@ DATASET_NAMES = [
 
 # optionally comment items in the list 
 SCALE_ARRAYS = [
-    # [0.25, 0.5, 1.0, 2.0],
-    [0.125, 0.25, 0.5, 1.0],
-    # [0.06125, 0.125, 0.25, 0.5]
+    [0.25, 0.5, 1.0, 2.0],
+    # [0.125, 0.25, 0.5, 1.0],
+    # [0.0625, 0.125, 0.25, 0.5]
 ]
 
 STRIDES = [8]
 # optionally comment items in the list 
 RUN_NRS = [
     "1st",
-    # "2nd",
-    # "3rd"
+    "2nd",
+    "3rd",
+    "4th",
+    "5th"
 ]  
 
 EVAL_STEPS = [2304]
